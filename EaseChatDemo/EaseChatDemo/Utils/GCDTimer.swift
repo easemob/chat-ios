@@ -7,6 +7,7 @@
 
 import Foundation
 
+
 public protocol GCDTimer {
     // 启动
     func resume()

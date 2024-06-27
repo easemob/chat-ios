@@ -104,3 +104,23 @@
 
 "agreeFriendRequest success" = "好友请求已同意";
 "Debug Log" = "调试日志";
+"Privacy" = "隐私";
+"block_list" = "黑名单";
+"Target Language" = "目标语言";
+"After setting, long-pressing a message will translate it into the specified target language." = "设置后，长按消息将翻译为指定的目标语言";
+"online_status" = "在线状态";
+"Custom Status" = "自定义";
+"Away" = "离开";
+"Busy" = "忙碌";
+"The length of the custom status should be less than 20 characters" = "自定义状态长度应该小于20个字符";
+"Do Not Disturb" = "勿扰";
+"Online" = "在线";
+"Offline" = "离线";
+
+"typing_indicator" = "输入状态";
+"translate_language_setting" = "翻译目标语言";
+
+"translate_language_setting_alert" = "设置后，长按消息将翻译为指定的目标语言";
+
+"Typing Alert" = "开启后，对方将看到您的输入状态";
+"Block Alert" = "开启好友黑名单功能";

@@ -111,9 +111,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     @objc private func loadLogin() {
         DispatchQueue.main.async {
-            if self.window?.rootViewController is MainViewController {
-                self.window?.rootViewController = LoginViewController()
-            }
+            self.window?.rootViewController = LoginViewController()
         }
     }
 

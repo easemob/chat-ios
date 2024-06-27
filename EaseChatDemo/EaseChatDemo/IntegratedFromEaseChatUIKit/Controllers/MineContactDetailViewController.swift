@@ -32,9 +32,37 @@ final class MineContactDetailViewController: ContactInfoViewController {
             ContactListHeaderItem(featureIdentify: "SearchMessages", featureName: "SearchMessages".chat.localize, featureIcon: UIImage(named: "search_history_messages", in: .chatBundle, with: nil))
         ]
         super.viewDidLoad()
-        self.requestInfo()
-        self.header.status.isHidden = true
         // Do any additional setup after loading the view.
+    }
+    
+    override func setup() {
+        super.setup()
+        if self.showMenu {
+            self.requestInfo()
+            self.fetchUserStatus()
+        }
+    }
+    
+    @objc func fetchUserStatus() {
+        PresenceManager.shared.fetchPresenceStatus(userId: self.profile.id) {  [weak self] presence, error in
+            switch PresenceManager.fetchStatus(presence: presence) {
+            case .online: self?.updateUserState(state: .online)
+            case .offline: self?.updateUserState(state: .offline)
+            case .busy:
+                self?.navigation.status.backgroundColor = .clear
+                self?.navigation.status.image(PresenceManager.presenceImagesMap[.busy] as? UIImage)
+            case .away:
+                self?.navigation.status.backgroundColor = .clear
+                self?.navigation.status.image(PresenceManager.presenceImagesMap[.away] as? UIImage)
+            case .doNotDisturb:
+                self?.navigation.status.backgroundColor = .clear
+                self?.navigation.status.image(PresenceManager.presenceImagesMap[.doNotDisturb] as? UIImage)
+            case .custom:
+                self?.navigation.status.backgroundColor = .clear
+                self?.navigation.status.image(PresenceManager.presenceImagesMap[.custom] as? UIImage)
+            }
+            
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {

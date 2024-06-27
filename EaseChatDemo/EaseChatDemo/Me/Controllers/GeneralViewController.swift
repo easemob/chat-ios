@@ -17,20 +17,27 @@ final class GeneralViewController: UIViewController {
     
     @UserDefault("EaseChatDemoPreferencesTheme", defaultValue: 0) var theme: UInt
     
-    private lazy var jsons: [Dictionary<String,Any>] = {
-        [["title":"dark_mode".localized(),"detail":"","withSwitch": true,"switchValue":self.darkMode],
-         ["title":"switch_theme".localized(),"detail":(self.theme == 0 ? "Classic".localized():"Smart".localized()),"withSwitch": false,"switchValue":false],
-         ["title":"color_setting".localized(),"detail":"","withSwitch": false,"switchValue":false],
-         ["title":"feature_switch".localized(),"detail":"","withSwitch": false,"switchValue":false],
-         ["title":"language_setting".localized(),"detail":self.language.hasPrefix("zh") ? "Chinese".localized():"English".localized(),"withSwitch": false,"switchValue":false],
-         ["title":"Debug Log".localized(),"detail":"","withSwitch": false,"switchValue":false]]
+    @UserDefault("EaseChatDemoPreferencesTyping", defaultValue: true) var typing: Bool
+    
+    @UserDefault("EaseChatDemoTranslateTargetLanguage", defaultValue: "zh-Hans") var translate_language: String
+    
+    private lazy var jsons: [[Dictionary<String,Any>]] = {
+        [[["title":"typing_indicator".localized(),"detail":"","withSwitch": true,"switchValue":self.typing]],[["title":"dark_mode".localized(),"detail":"","withSwitch": true,"switchValue":self.darkMode],
+             ["title":"switch_theme".localized(),"detail":(self.theme == 0 ? "Classic".localized():"Smart".localized()),"withSwitch": false,"switchValue":false],
+             ["title":"color_setting".localized(),"detail":"","withSwitch": false,"switchValue":false],
+             ["title":"feature_switch".localized(),"detail":"","withSwitch": false,"switchValue":false],
+             ["title":"language_setting".localized(),"detail":self.language.hasPrefix("zh") ? "Chinese".localized():"English".localized(),"withSwitch": false,"switchValue":false],
+             ["title":"translate_language_setting".localized(),"detail":self.translate_language.hasPrefix("zh") ? "Chinese".localized():"English".localized(),"withSwitch": false,"switchValue":false],
+             ["title":"Debug Log".localized(),"detail":"","withSwitch": false,"switchValue":false]]]
     }()
     
-    private lazy var datas: [DetailInfo] = {
+    private lazy var datas: [[DetailInfo]] = {
         self.jsons.map {
-            let info = DetailInfo()
-            info.setValuesForKeys($0)
-            return info
+            $0.map { dic in
+                let info = DetailInfo()
+                info.setValuesForKeys(dic)
+                return info
+            }
         }
     }()
     
@@ -61,8 +68,27 @@ final class GeneralViewController: UIViewController {
 
 extension GeneralViewController: UITableViewDelegate,UITableViewDataSource {
     
+    func numberOfSections(in tableView: UITableView) -> Int {
+        self.datas.count
+    }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        section == 0 ? 26:0
+    }
+    
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        if section == 0 {
+            return UIView {
+                UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 26)).backgroundColor(Theme.style == .dark ? UIColor.theme.neutralColor0:UIColor.theme.neutralColor95)
+                UILabel(frame: CGRect(x: 16, y: 4, width: self.view.frame.width-32, height: 18)).font(UIFont.theme.bodyMedium).textColor(Theme.style == .dark ? UIColor.theme.neutralColor6:UIColor.theme.neutralColor5).text("Typing Alert".localized()).textAlignment(.right)
+            }
+        } else {
+            return nil
+        }
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        self.jsons.count
+        self.datas[section].count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -71,7 +97,7 @@ extension GeneralViewController: UITableViewDelegate,UITableViewDataSource {
             cell = DetailInfoListCell(style: .default, reuseIdentifier: "GeneralCell")
         }
         cell?.indexPath = indexPath
-        if let info = self.datas[safe: indexPath.row] {
+        if let info = self.datas[safe: indexPath.section]?[safe: indexPath.row] {
             cell?.accessoryType = info.withSwitch ? .none:.disclosureIndicator
             cell?.refresh(info: info)
         }
@@ -83,19 +109,31 @@ extension GeneralViewController: UITableViewDelegate,UITableViewDataSource {
     }
     
     func switchChanged(isOn: Bool, indexPath: IndexPath) {
-        Theme.switchTheme(style: isOn ? .dark:.light)
-        self.darkMode = isOn
+        if let title = self.datas[safe: indexPath.section]?[safe: indexPath.row]?.title {
+            switch title {
+            case "dark_mode".localized():
+                Theme.switchTheme(style: isOn ? .dark:.light)
+                self.darkMode = isOn
+            case "typing_indicator".localized():
+                self.typing = isOn
+                Appearance.chat.enableTyping = isOn
+            default:
+                break
+            }
+            
+        }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        if let title = self.datas[safe: indexPath.row]?.title,title != "dark_mode".localized() {
+        if let title = self.datas[safe: indexPath.section]?[safe: indexPath.row]?.title,title != "dark_mode".localized() {
             switch title {
             case "switch_theme".localized(): self.switchTheme()
             case "color_setting".localized(): self.colorSet()
             case "feature_switch".localized(): self.featureSwitch()
             case "language_setting".localized(): self.languageSet()
             case "Debug Log".localized(): self.openLog()
+            case "translate_language_setting".localized(): self.translateLanguageSet()
             default:
                 break
             }
@@ -122,10 +160,15 @@ extension GeneralViewController: UITableViewDelegate,UITableViewDataSource {
         self.navigationController?.pushViewController(vc, animated: true)
     }
     
+    private func translateLanguageSet() {
+        let vc = TranslateLanguageSettingController()
+        self.navigationController?.pushViewController(vc, animated: true)
+    }
+    
     private func openLog() {
         let previewController = QLPreviewController()
         previewController.dataSource = self
-        self.navigationController?.pushViewController(previewController, animated: true)
+        self.present(previewController, animated: true)
     }
     
 }
@@ -146,5 +189,6 @@ extension GeneralViewController: QLPreviewControllerDataSource {
 extension GeneralViewController: ThemeSwitchProtocol {
     func switchTheme(style: ThemeStyle) {
         self.view.backgroundColor = style == .dark ? UIColor.theme.neutralColor1:UIColor.theme.neutralColor98
+        self.menuList.reloadData()
     }
 }

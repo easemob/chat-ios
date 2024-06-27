@@ -8,6 +8,7 @@
 import UIKit
 import EaseChatUIKit
 
+
 final class FeatureSwitchViewController: UIViewController {
     
     @UserDefault("EaseMobChatMessageTranslation", defaultValue: true) var enableTranslation: Bool
@@ -16,9 +17,12 @@ final class FeatureSwitchViewController: UIViewController {
     
     @UserDefault("EaseMobChatCreateMessageThread", defaultValue: true) var messageThread: Bool
     
+    @UserDefault("EaseChatDemoPreferencesBlock", defaultValue: true) var block: Bool
+    
     
     private lazy var jsons: [Dictionary<String,Any>] = {
-        [["title":"message_translate".localized(),"detail":"message_translate_description".localized(),"withSwitch": true,"switchValue":self.enableTranslation],["title":"group_topic".localized(),"detail":"group_topic_description".localized(),"withSwitch": true,"switchValue":self.messageThread],["title":"message_reaction".localized(),"detail":"message_reaction_description".localized(),"withSwitch": true,"switchValue":self.messageReaction]]
+        [["title":"message_translate".localized(),"detail":"message_translate_description".localized(),"withSwitch": true,"switchValue":self.enableTranslation],["title":"group_topic".localized(),"detail":"group_topic_description".localized(),"withSwitch": true,"switchValue":self.messageThread],["title":"message_reaction".localized(),"detail":"message_reaction_description".localized(),"withSwitch": true,"switchValue":self.messageReaction],["title":"block_list".localized(),"detail":"Block Alert".localized(),"withSwitch": true,"switchValue":self.block]
+        ]
     }()
 
     private lazy var navigation: EaseChatNavigationBar = {
@@ -95,7 +99,10 @@ extension FeatureSwitchViewController: UITableViewDelegate,UITableViewDataSource
                 Appearance.chat.contentStyle.removeAll { $0 == .withMessageReaction }
             }
         }
-//        self.featureList.reloadRows(at: [IndexPath(row: sender.tag, section: 0)], with: .automatic)
+        if info["title"] as? String == "block_list".localized() {
+            self.block = sender.isOn
+            Appearance.contact.enableBlock = sender.isOn
+        }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

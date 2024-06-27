@@ -19,7 +19,7 @@ final class MeMenuCell: UITableViewCell {
     }()
     
     lazy var detail: UILabel = {
-        UILabel(frame: CGRect(x: self.frame.width-36, y: 18, width: (self.frame.width-36)/2.0-20, height: 18)).font(UIFont.theme.labelMedium)
+        UILabel(frame: CGRect(x: self.frame.width-156, y: 18, width: 120, height: 18)).font(UIFont.theme.labelMedium).textAlignment(.right)
     }()
     
     public private(set) lazy var separatorLine: UIView = {
@@ -40,7 +40,7 @@ final class MeMenuCell: UITableViewCell {
         super.layoutSubviews()
         self.icon.frame = CGRect(x: 16, y: 13, width: self.contentView.frame.height-26, height: self.contentView.frame.height-26)
         self.content.frame = CGRect(x: self.icon.frame.maxX+8, y: 16, width: (self.frame.width-32)/2.0, height: 22)
-        self.detail.frame = CGRect(x: self.frame.width-36, y: 18, width: (self.frame.width-36)/2.0-20, height: 18)
+        self.detail.frame = CGRect(x: self.frame.width-156, y: 18, width: 120, height: 18)
         self.separatorLine.frame = CGRect(x: self.content.frame.minX, y: self.contentView.frame.height - 0.5, width: self.frame.width, height: 0.5)
     }
     

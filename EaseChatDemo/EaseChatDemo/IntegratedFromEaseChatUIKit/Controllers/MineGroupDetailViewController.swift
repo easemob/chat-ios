@@ -12,8 +12,12 @@ import EaseCallKit
 final class MineGroupDetailViewController: GroupInfoViewController {
     
     override func cleanHistoryMessages() {
-        super.cleanHistoryMessages()
-        self.showToast(toast: "Clean successful!".localized())
+        DialogManager.shared.showAlert(title: "group_details_button_clearchathistory".chat.localize, content: "", showCancel: true, showConfirm: true) { [weak self] _ in
+            guard let `self` = self else { return }
+            self.showToast(toast: "Clean successful!".localized())
+            ChatClient.shared().chatManager?.getConversationWithConvId(self.chatGroup.groupId)?.deleteAllMessages(nil)
+            NotificationCenter.default.post(name: Notification.Name("EaseChatUIKit_clean_history_messages"), object: self.chatGroup.groupId)
+        }
     }
 
     override func viewDidLoad() {

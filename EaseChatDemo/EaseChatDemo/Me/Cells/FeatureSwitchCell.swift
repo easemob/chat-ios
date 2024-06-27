@@ -19,11 +19,11 @@ final class FeatureSwitchCell: UITableViewCell {
     }()
 
     lazy var detailContainer: UIView = {
-        UIView(frame: CGRect(x: 0, y: self.featureName.frame.maxY+20, width: self.frame.width, height: 20))
+        UIView(frame: CGRect(x: 0, y: self.featureName.frame.maxY+20, width: self.frame.width, height: 26))
     }()
     
     lazy var featureDetail: UILabel = {
-        UILabel(frame: CGRect(x: 16, y: self.featureName.frame.maxY+20, width: self.contentView.frame.width-32, height: 18)).font(UIFont.theme.bodyMedium)
+        UILabel(frame: CGRect(x: 16, y: self.featureName.frame.maxY+24, width: self.contentView.frame.width-32, height: 16)).font(UIFont.theme.bodyMedium)
     }()
     
     lazy var separatorLine: UIView = {
@@ -42,9 +42,9 @@ final class FeatureSwitchCell: UITableViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         self.featureName.frame = CGRect(x: 16, y: 16, width: self.contentView.frame.width-73, height: 22)
-        self.detailContainer.frame = CGRect(x: 0, y: self.featureName.frame.maxY+20, width: self.frame.width, height: 20)
+        self.detailContainer.frame =  CGRect(x: 0, y: self.featureName.frame.maxY+20, width: self.frame.width, height: 26)
         self.featureSwitch.frame = CGRect(x: self.contentView.frame.width-63, y: 11.5, width: 51, height: 31)
-        self.featureDetail.frame = CGRect(x: 16, y: self.featureName.frame.maxY+20, width: self.contentView.frame.width-32, height: 18)
+        self.featureDetail.frame = CGRect(x: 16, y: self.featureName.frame.maxY+24, width: self.contentView.frame.width-32, height: 16)
         self.separatorLine.frame = CGRect(x: 16, y: self.featureName.frame.maxY+20, width: self.frame.width-16, height: 0.5)
     }
     

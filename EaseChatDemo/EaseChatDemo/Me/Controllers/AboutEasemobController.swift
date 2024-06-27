@@ -10,11 +10,14 @@ import EaseChatUIKit
 
 final class AboutEasemobController: UIViewController {
 
-    private let infos = [["title":"Official Website".localized(),"content":"https://www.huanxin.com"],
-                         ["title":"Hotline".localized(),"content":"400-622-1766"],
-                         ["title":"Business Cooperation".localized(),"content":"bd@easemob.com"],
-                         ["title":"Channel Cooperation".localized(),"content":"qudao@easemob.com"],
-                         ["title":"Suggestions".localized(),"content":"issues@easemob.com"]]
+    private let infos = [
+        ["title":"Official Website".localized(),"content":"https://www.huanxin.com","destination":"https://www.huanxin.com"],
+        ["title":"Hotline".localized(),"content":"400-622-1766","destination":"tel://400-622-1766"],
+        ["title":"Business Cooperation".localized(),"content":"bd@easemob.com","destination":"mailto:bd@easemob.com"],
+        ["title":"Channel Cooperation".localized(),"content":"qudao@easemob.com","destination":"mailto:qudao@easemob.com"],
+        ["title":"Suggestions".localized(),"content":"issues@easemob.com","destination":"mailto:issues@easemob.com"],
+        ["title":"Privacy Policy".localized(),"content":"https://www.easemob.com/protocol","destination":"https://www.easemob.com/protocol"]
+    ]
     
     private lazy var navigation: EaseChatNavigationBar = {
         EaseChatNavigationBar(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: NavigationHeight), textAlignment: .left, rightTitle: nil)
@@ -63,48 +66,17 @@ extension AboutEasemobController: UITableViewDelegate,UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let title = self.infos[safe:indexPath.row]?["title"] ?? ""
-        switch title {
-        case "Official Website".localized():
-            UIApplication.shared.open(URL(string: "https://www.huanxin.com")!, options: [:], completionHandler: nil)
-        case "Hotline".localized(): self.makePhoneCall()
-        case "Business Cooperation".localized(): self.sendBDEmail()
-        case "Channel Cooperation".localized(): self.sendChannelEmail()
-        case "Suggestions".localized(): self.sendSuggestionEmail()
-        default:
-            break
-        }
+        let detail = self.infos[safe:indexPath.row]?["destination"] ?? ""
+        self.openURL(urlString: detail)
     }
     
-    private func makePhoneCall() {
-        if let url = URL(string: "tel://4006221766"), UIApplication.shared.canOpenURL(url) {
+    private func openURL(urlString: String) {
+        if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
     }
     
-    private func sendBDEmail() {
-        if let emailURL = URL(string: "mailto:bd@easemob.com") {
-            if UIApplication.shared.canOpenURL(emailURL) {
-                UIApplication.shared.open(emailURL, options: [:], completionHandler: nil)
-            }
-        }
-    }
     
-    private func sendChannelEmail() {
-        if let emailURL = URL(string: "mailto:qudao@easemob.com") {
-            if UIApplication.shared.canOpenURL(emailURL) {
-                UIApplication.shared.open(emailURL, options: [:], completionHandler: nil)
-            }
-        }
-    }
-    
-    private func sendSuggestionEmail() {
-        if let emailURL = URL(string: "mailto:issues@easemob.com") {
-            if UIApplication.shared.canOpenURL(emailURL) {
-                UIApplication.shared.open(emailURL, options: [:], completionHandler: nil)
-            }
-        }
-    }
 }
 
 extension AboutEasemobController: ThemeSwitchProtocol {

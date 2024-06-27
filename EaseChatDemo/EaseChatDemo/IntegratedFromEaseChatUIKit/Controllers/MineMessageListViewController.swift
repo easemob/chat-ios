@@ -14,16 +14,85 @@ let callIdentifier = "msgType"
 let callValue = "rtcCallWithAgora"
 
 final class MineMessageListViewController: MessageListController {
+    
+    private var otherPartyStatus = ""
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Do any additional setup after loading the view.
+        if self.chatType == .chat {
+            self.subscribeUserStatus()
+        }
     }
     
+    deinit {
+        PresenceManager.shared.unsubscribe(members: [self.profile.id], completion: nil)
+        EaseChatUIKitContext.shared?.cleanCache(type: .chat)
+        URLPreviewManager.caches.removeAll()
+    }
+    
+    @objc func subscribeUserStatus() {
+        PresenceManager.shared.usersStatusChanged = { [weak self] users in
+            guard let `self` = self else { return }
+            if users.contains(self.profile.id), let presence = PresenceManager.shared.presences[self.profile.id] {
+                self.showUserStatus(state: PresenceManager.fetchStatus(presence: presence))
+            }
+        }
+        PresenceManager.shared.subscribe(members: [self.profile.id]) { [weak self] presences, error in
+            if let presence = presences?.first {
+                self?.showUserStatus(state: PresenceManager.fetchStatus(presence: presence))
+            }
+        }
+    }
+    
+    override func performTypingTask() {
+        if self.chatType == .chat {
+            DispatchQueue.main.async {
+                self.navigation.subtitle = self.otherPartyStatus
+                self.navigation.title = self.navigation.title
+            }
+        }
+    }
+    
+    private func showUserStatus(state: PresenceManager.State) {
+        let subtitle = PresenceManager.showStatusMap[state] ?? ""
+        switch state {
+        case .online:
+            self.navigation.userState = .online
+        case .offline:
+            self.navigation.userState = .offline
+        case .busy:
+            self.navigation.status.image = nil
+            self.navigation.status.backgroundColor = Theme.style == .dark ? UIColor.theme.errorColor5:UIColor.theme.errorColor6
+        case .away:
+            self.navigation.status.backgroundColor = Theme.style == .dark ? UIColor.theme.neutralColor1:UIColor.theme.neutralColor98
+            self.navigation.status.image(PresenceManager.presenceImagesMap[.away] as? UIImage)
+        case .doNotDisturb:
+            self.navigation.status.backgroundColor = Theme.style == .dark ? UIColor.theme.neutralColor1:UIColor.theme.neutralColor98
+            self.navigation.status.image(PresenceManager.presenceImagesMap[.doNotDisturb] as? UIImage)
+        case .custom:
+            self.navigation.status.backgroundColor = Theme.style == .dark ? UIColor.theme.neutralColor1:UIColor.theme.neutralColor98
+            self.navigation.status.image(PresenceManager.presenceImagesMap[.custom] as? UIImage)
+        }
+        self.otherPartyStatus = subtitle
+        self.navigation.subtitle = subtitle
+        self.navigation.title = self.navigation.title
+
+    }
+    
+    /**
+     Updates the user state and sets it to the specified state.
+     
+     - Parameters:
+        - state: The new user state.
+     */
+    @MainActor @objc public func updateUserState(state: UserState) {
+        self.navigation.userState = state
+    }
     
     override func rightImages() -> [UIImage] {
-        var images = [UIImage(named: "message_action_topic", in: .chatBundle, with: nil)!,UIImage(named: "call", in: .chatBundle, with: nil)!]
+        var images = [UIImage(named: "pinned_messages", in: .chatBundle, with: nil)!,UIImage(named: "message_action_topic", in: .chatBundle, with: nil)!,UIImage(named: "call", in: .chatBundle, with: nil)!]
         if self.chatType == .chat {
             images = [UIImage(named: "call", in: .chatBundle, with: nil)!]
         } else {
@@ -39,13 +108,14 @@ final class MineMessageListViewController: MessageListController {
     override func rightItemsAction(indexPath: IndexPath?) {
         guard let idx = indexPath else { return }
         switch idx.row {
-        case 0:
+        case 0: self.showPinnedMessages()
+        case 1:
             if self.chatType == .chat {
                 self.callAction()
             } else {
                 !Appearance.chat.contentStyle.contains(.withMessageThread) ? self.callAction():self.viewTopicList()
             }
-        case 1: self.callAction()
+        case 2: self.callAction()
         default:
             break
         }

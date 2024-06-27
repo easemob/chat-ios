@@ -98,3 +98,20 @@
 "Clean successful!" = "Clean successful";
 "agreeFriendRequest success" = "Friend request accepted";
 "Debug Log" = "Debug Log";
+"Privacy" = "Privacy";
+"block_list" = "Block List";
+"Target Language" = "Target Language";
+"After setting, long-pressing a message will translate it into the specified target language." = "After setting, long-pressing a message will translate it into the specified target language.";
+"online_status" = "Online Status";
+"Custom Status" = "Custom";
+"Away" = "Away";
+"Busy" = "Busy";
+"The length of the custom status should be less than 20 characters" = "The length of the custom status should be less than 20 characters";
+"Do Not Disturb" = "Do Not Disturb";
+"Offline" = "Offline";
+
+"typing_indicator" = "Typing Indicator";
+"translate_language_setting" = "Target Language";
+"translate_language_setting_alert" = "After setting, long-pressing a message will translate it into the specified target language.";
+"Typing Alert" = "Turn on,other party'll saw your typing";
+"Block Alert" = "Enable the friend blacklist feature";

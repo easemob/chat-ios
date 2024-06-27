@@ -61,6 +61,19 @@ final class LoginViewController: UIViewController {
         UITextView(frame: CGRect(x: self.agree.frame.maxX+4, y: self.login.frame.maxY+10, width: ScreenWidth-90-4, height: 58)).attributedText(self.protocolContent).isEditable(false).backgroundColor(.clear)
     }()
     
+    public private(set) lazy var loadingView: LoadingView = {
+        self.createLoading()
+    }()
+    
+    /**
+     Creates a loading view.
+     
+     - Returns: A `LoadingView` instance.
+     */
+    @objc public func createLoading() -> LoadingView {
+        LoadingView(frame: self.view.bounds)
+    }
+    
     private var count = 60
     
     private lazy var timer: GCDTimer? = {
@@ -89,7 +102,8 @@ final class LoginViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.addSubViews([self.background,self.appName,self.sdkVersion,self.phoneNumber,self.pinCode,self.loginContainer,self.login,self.agree,self.protocolContainer,self.serverConfig])
+        self.view.addSubViews([self.background,self.appName,self.sdkVersion,self.phoneNumber,self.pinCode,self.loginContainer,self.login,self.agree,self.protocolContainer,self.serverConfig,self.loadingView])
+        self.loadingView.isHidden = true
         self.serverConfig.isHidden = true
         self.right.titleLabel?.textAlignment = .right
         self.sdkVersion.text = "V\(ChatClient.shared().version)"
@@ -231,7 +245,9 @@ extension LoginViewController: UITextFieldDelegate {
                 self.showToast(toast: "PasswordError".localized())
                 return
             }
+            self.loadingView.startAnimating()
             ChatClient.shared().fetchToken(withUsername: userId.lowercased(), password: password) {[weak self] token, error in
+                self?.loadingView.stopAnimating()
                 if error ==  nil,let chatToken = token {
                     let user = EaseChatProfile()
                     user.id = userId
@@ -250,6 +266,7 @@ extension LoginViewController: UITextFieldDelegate {
                 self.showToast(toast: "PinCodeError".localized())
                 return
             }
+            self.loadingView.startAnimating()
             EasemobBusinessRequest.shared.sendPOSTRequest(api: .login(()), params: ["phoneNumber":phone,"smsCode":code]) { [weak self] result, error in
                 if error == nil {
                     if let userId = result?["chatUserName"] as? String,let token = result?["token"] as? String{
@@ -257,23 +274,10 @@ extension LoginViewController: UITextFieldDelegate {
                         user.id = userId
                         user.avatarURL = (result?["avatarUrl"] as? String) ?? ""
                         self?.login(user: user, token: token)
-                        if let profiles = EaseChatProfile.select(where: "id = '\(userId)'") as? [EaseChatProfile] {
-                            if profiles.first == nil {
-                                user.insert()
-                            } else {
-                                if let profile = profiles.first {
-                                    user.update()
-                                    EaseChatUIKitContext.shared?.currentUser = profiles.first
-                                    EaseChatUIKitContext.shared?.userCache?[profile.id] = profile
-                                }
-                            }
-                        } else {
-                            user.insert()
-                            EaseChatUIKitContext.shared?.currentUser = user
-                            EaseChatUIKitContext.shared?.userCache?[userId] = user
-                        }
+                        user.insert()
                     }
                 } else {
+                    self?.loadingView.stopAnimating()
                     self?.showToast(toast: "PhoneError".localized())
                 }
             }
@@ -286,7 +290,20 @@ extension LoginViewController: UITextFieldDelegate {
         }
         self.loadCache()
         EaseChatUIKitClient.shared.login(user: user, token: token) { [weak self] error in
+            self?.loadingView.stopAnimating()
             if error == nil {
+                if let profiles = EaseChatProfile.select(where: "id = '\(user.id)'") as? [EaseChatProfile] {
+                    if profiles.first != nil {
+                        if let profile = profiles.first {
+                            (user as? EaseChatProfile)?.update()
+                            EaseChatUIKitContext.shared?.currentUser = profiles.first
+                            EaseChatUIKitContext.shared?.userCache?[profile.id] = profile
+                        }
+                    }
+                } else {
+                    EaseChatUIKitContext.shared?.currentUser = user
+                    EaseChatUIKitContext.shared?.userCache?[user.id] = user
+                }
                 self?.fillCache()
                 self?.entryHome()
             } else {
